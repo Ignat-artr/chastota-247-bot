@@ -30,21 +30,19 @@ def send_to_telegram(text):
 # 3. Функция получения новостей
 def fetch_news():
     google_news = GNews(language='ru', country='RU', period='1d', max_results=5)
-    
-    # Можно заменить 'музыка' на 'игры' или 'world' для других тем
+
     news = google_news.get_news('музыка')
-    
+
     if not news:
-        # Если по ключевому слову ничего нет — берём топовые новости
         news = google_news.get_top_news()
-    
+
     articles = []
     for item in news:
         title = item.get('title', 'Без заголовка')
         desc = item.get('description', 'Нет описания')
         link = item.get('url', '#')
         source = item.get('publisher', 'Неизвестный источник')
-        
+
         msg = (
             f"📰 <b>{title}</b>\n\n"
             f"{desc}\n\n"
@@ -52,21 +50,21 @@ def fetch_news():
             f"📌 Источник: {source}"
         )
         articles.append(msg)
-    
+
     return articles
 
 # 4. Основной процесс
 def main():
     print("🚀 Запуск сбора новостей...")
     messages = fetch_news()
-    
+
     if not messages:
         print("ℹ️ Новостей не найдено, задача завершена")
         return
 
     for msg in messages:
         send_to_telegram(msg)
-        time.sleep(2)  # пауза, чтобы не превысить лимиты Telegram
+        time.sleep(2)
 
 if __name__ == "__main__":
     main()
