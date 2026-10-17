@@ -1,17 +1,29 @@
 import os
+import sys
 import time
 import requests
 from gnews import GNews
 
-# 1. Получение конфиденциальных данных из переменных окружения (GitHub Secrets)
-TELEGRAM_BOT_TOKEN = os.environ.get(8933152399:AAE1YDg35zrv_x92jhWFu_5u8slLbc0TOms)
-TELEGRAM_CHAT_ID = os.environ.get(-1004415830609)
-GNEWS_API_KEY = os.environ.get(93714938bb2337ea461704e85eb11587)
+# Читаем переменные окружения. Если чего-то нет — выводим понятную ошибку и выходим с кодом 1
+TELEGRAM_BOT_TOKEN = os.environ.get("8933152399:AAE1YDg35zrv_x92jhWFu_5u8slLbc0TOms", "").strip()
+TELEGRAM_CHAT_ID  = os.environ.get(-1004415830609, "").strip()
+GNEWS_API_KEY     = os.environ.get("93714938bb2337ea461704e85eb11587, "").strip()
 
-if not all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, GNEWS_API_KEY]):
-    raise ValueError("Отсутствуют необходимые переменные среды. Проверьте Secrets в GitHub.")
+missing = []
+if not TELEGRAM_BOT_TOKEN:
+    missing.append("TELEGRAM_BOT_TOKEN")
+if not TELEGRAM_CHAT_ID:
+    missing.append("TELEGRAM_CHAT_ID")
+if not GNEWS_API_KEY:
+    missing.append("GNEWS_API_KEY")
 
-# 2. Функция отправки сообщения в Telegram
+if missing:
+    print("❌ Не найдены переменные окружения: " + ", ".join(missing))
+    print("Проверьте GitHub → Settings → Secrets and variables → Actions → Repository secrets")
+    print("И убедитесь, что в .github/workflows/main.yml есть блок env с этими именами.")
+    sys.exit(1)
+
+# Отправка сообщения в Telegram
 def send_to_telegram(text):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
@@ -27,10 +39,9 @@ def send_to_telegram(text):
     except Exception as e:
         print(f"❌ Ошибка отправки: {e}")
 
-# 3. Функция получения новостей
+# Получение новостей
 def fetch_news():
     google_news = GNews(language='ru', country='RU', period='1d', max_results=5)
-
     news = google_news.get_news('музыка')
 
     if not news:
@@ -38,9 +49,9 @@ def fetch_news():
 
     articles = []
     for item in news:
-        title = item.get('title', 'Без заголовка')
-        desc = item.get('description', 'Нет описания')
-        link = item.get('url', '#')
+        title  = item.get('title', 'Без заголовка')
+        desc   = item.get('description', 'Нет описания')
+        link   = item.get('url', '#')
         source = item.get('publisher', 'Неизвестный источник')
 
         msg = (
@@ -53,7 +64,6 @@ def fetch_news():
 
     return articles
 
-# 4. Основной процесс
 def main():
     print("🚀 Запуск сбора новостей...")
     messages = fetch_news()
