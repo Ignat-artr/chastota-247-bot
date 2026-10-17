@@ -4,11 +4,12 @@ import time
 import requests
 from gnews import GNews
 
-# Читаем переменные окружения. Если чего-то нет — выводим понятную ошибку и выходим с кодом 1
-TELEGRAM_BOT_TOKEN = os.environ.get("8933152399:AAE1YDg35zrv_x92jhWFu_5u8slLbc0TOms", "").strip()
-TELEGRAM_CHAT_ID  = os.environ.get(-1004415830609, "").strip()
-GNEWS_API_KEY     = os.environ.get("93714938bb2337ea461704e85eb11587, "").strip()
+# Читаем имена переменных из окружения. Значения подставит GitHub из Secrets.
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+GNEWS_API_KEY      = os.environ.get("GNEWS_API_KEY", "").strip()
 
+# Проверка, что все секреты дошли
 missing = []
 if not TELEGRAM_BOT_TOKEN:
     missing.append("TELEGRAM_BOT_TOKEN")
@@ -20,7 +21,6 @@ if not GNEWS_API_KEY:
 if missing:
     print("❌ Не найдены переменные окружения: " + ", ".join(missing))
     print("Проверьте GitHub → Settings → Secrets and variables → Actions → Repository secrets")
-    print("И убедитесь, что в .github/workflows/main.yml есть блок env с этими именами.")
     sys.exit(1)
 
 # Отправка сообщения в Telegram
@@ -64,6 +64,7 @@ def fetch_news():
 
     return articles
 
+# Основной процесс
 def main():
     print("🚀 Запуск сбора новостей...")
     messages = fetch_news()
@@ -74,6 +75,10 @@ def main():
 
     for msg in messages:
         send_to_telegram(msg)
+        time.sleep(2)
+
+if __name__ == "__main__":
+    main()
         time.sleep(2)
 
 if __name__ == "__main__":
