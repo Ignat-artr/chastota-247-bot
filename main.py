@@ -4,9 +4,9 @@ import requests
 from gnews import GNews
 
 # 1. Получение конфиденциальных данных из переменных окружения (GitHub Secrets)
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-GNEWS_API_KEY = os.environ.get("GNEWS_API_KEY")
+TELEGRAM_BOT_TOKEN = os.environ.get(8933152399:AAGLu7kLqLd250KmPdKI8kVfp--9_IROyE8)
+TELEGRAM_CHAT_ID = os.environ.get(-1004415830609)
+GNEWS_API_KEY = os.environ.get(93714938bb2337ea461704e85eb11587)
 
 if not all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, GNEWS_API_KEY]):
     raise ValueError("Отсутствуют необходимые переменные среды. Проверьте Secrets в GitHub.")
