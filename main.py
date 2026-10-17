@@ -4,7 +4,7 @@ import requests
 from gnews import GNews
 
 # 1. Получение конфиденциальных данных из переменных окружения (GitHub Secrets)
-TELEGRAM_BOT_TOKEN = os.environ.get(8933152399:AAGLu7kLqLd250KmPdKI8kVfp--9_IROyE8)
+TELEGRAM_BOT_TOKEN = os.environ.get(8933152399:AAE1YDg35zrv_x92jhWFu_5u8slLbc0TOms)
 TELEGRAM_CHAT_ID = os.environ.get(-1004415830609)
 GNEWS_API_KEY = os.environ.get(93714938bb2337ea461704e85eb11587)
 
