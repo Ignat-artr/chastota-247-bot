@@ -2,15 +2,15 @@ name: Частота 24/7 — Auto News Bot
 
 on:
   schedule:
-    # 6:00 UTC = 9:00 Минск
+    # 6:00 UTC  = 9:00 Минск
     - cron: '0 6 * * *'
-    # 9:00 UTC = 12:00 Минск
+    # 9:00 UTC  = 12:00 Минск
     - cron: '0 9 * * *'
     # 12:00 UTC = 15:00 Минск
     - cron: '0 12 * * *'
     # 15:00 UTC = 18:00 Минск
     - cron: '0 15 * * *'
-  workflow_dispatch:
+  workflow_dispatch:   # ручной запуск для теста
 
 jobs:
   build:
@@ -18,12 +18,22 @@ jobs:
 
     steps:
       - name: Скачать код
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Установить Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+
+      - name: Показать, какие секреты пришли (для отладки)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
+        run: |
+          echo "TOKEN  set: ${{ secrets.TELEGRAM_BOT_TOKEN != '' }}"
+          echo "CHAT_ID set: ${{ secrets.TELEGRAM_CHAT_ID != '' }}"
+          echo "GNEWS  set: ${{ secrets.GNEWS_API_KEY != '' }}"
 
       - name: Установить зависимости
         run: pip install -r requirements.txt
