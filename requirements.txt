@@ -1,2 +1,2 @@
-gnews
+git+https://github.com/ranahaani/GNews.git
 requests
