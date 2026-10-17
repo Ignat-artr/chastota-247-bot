@@ -76,7 +76,6 @@ def main():
     for msg in messages:
         send_to_telegram(msg)
         time.sleep(2)
-
 if __name__ == "__main__":
     main()
         time.sleep(2)
