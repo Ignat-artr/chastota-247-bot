@@ -2,14 +2,20 @@ name: Частота 24/7 — Auto News Bot
 
 on:
   schedule:
-    # Запуск каждый день в 09:00 UTC (12:00 по Минску)
+    # 6:00 UTC = 9:00 Минск
+    - cron: '0 6 * * *'
+    # 9:00 UTC = 12:00 Минск
     - cron: '0 9 * * *'
-  workflow_dispatch:  # Возможность запустить вручную для теста
+    # 12:00 UTC = 15:00 Минск
+    - cron: '0 12 * * *'
+    # 15:00 UTC = 18:00 Минск
+    - cron: '0 15 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Скачать код
         uses: actions/checkout@v4
