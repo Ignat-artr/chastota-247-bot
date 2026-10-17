@@ -4,6 +4,7 @@ import time
 import requests
 from gnews import GNews
 
+# Читаем секреты из окружения (значения подставит GitHub)
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 GNEWS_API_KEY      = os.environ.get("GNEWS_API_KEY", "").strip()
@@ -21,39 +22,31 @@ if missing:
     sys.exit(1)
 
 
-def send_photo(photo_url, caption):
-    """Отправка фото с подписью"""
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "photo": photo_url,
-        "caption": caption,
-        "parse_mode": "HTML"
-    }
-    try:
-        resp = requests.post(url, json=payload, timeout=30)
-        resp.raise_for_status()
-        print(f"✅ Фото отправлено: {caption[:40]}...")
-    except Exception as e:
-        print(f"❌ Ошибка отправки фото: {e}")
-        # Если фото не удалось — отправляем хотя бы текст
-        send_text(caption)
+def clean_text(text):
+    """Убираем лишние пробелы, переносы и обрезаем слишком длинные описания."""
+    if not text:
+        return ""
+    text = " ".join(text.split())          # схлопываем все пробелы и переносы
+    # Обрезаем до 280 символов, чтобы пост был кратким
+    if len(text) > 280:
+        text = text[:277].rsplit(" ", 1)[0] + "..."
+    return text
 
 
-def send_text(text):
-    """Отправка только текста"""
+def send_to_telegram(text):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": text,
-        "parse_mode": "HTML"
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True   # отключаем превью ссылок
     }
     try:
         resp = requests.post(url, json=payload, timeout=30)
         resp.raise_for_status()
-        print(f"✅ Текст отправлен: {text[:40]}...")
+        print(f"✅ Отправлено: {text[:60]}...")
     except Exception as e:
-        print(f"❌ Ошибка отправки текста: {e}")
+        print(f"❌ Ошибка отправки: {e}")
 
 
 def fetch_news():
@@ -63,44 +56,38 @@ def fetch_news():
     if not news:
         news = google_news.get_top_news()
 
-    return news
+    articles = []
+    for item in news:
+        title = clean_text(item.get('title', ''))
+        desc  = clean_text(item.get('description', ''))
+
+        if not title and not desc:
+            continue
+
+        # Формируем краткий пост без ссылок и источников
+        if title and desc:
+            msg = f"<b>{title}</b>\n\n{desc}"
+        elif title:
+            msg = f"<b>{title}</b>"
+        else:
+            msg = desc
+
+        articles.append(msg)
+
+    return articles
 
 
 def main():
-    print("🚀 Запуск...")
-    articles = fetch_news()
+    print("🚀 Запуск сбора новостей...")
+    messages = fetch_news()
 
-    if not articles:
-        print("ℹ️ Новостей нет")
+    if not messages:
+        print("ℹ️ Новостей не найдено, задача завершена")
         return
 
-    for item in articles:
-        title = item.get('title', '')
-        desc  = item.get('description', '')
-
-        # Убираем хвосты вида " - Название источника" из заголовка
-        if ' - ' in title:
-            title = title.rsplit(' - ', 1)[0].strip()
-
-        # Короткий текст: заголовок жирным + описание
-        text = f"<b>{title}</b>"
-        if desc:
-            text += f"\n\n{desc}"
-
-        # Пробуем достать картинку из разных возможных полей
-        image_url = (
-            item.get('image') or
-            item.get('image_url') or
-            item.get('thumbnail') or
-            None
-        )
-
-        if image_url and image_url.startswith('http'):
-            send_photo(image_url, text)
-        else:
-            send_text(text)
-
-        time.sleep(3)
+    for msg in messages:
+        send_to_telegram(msg)
+        time.sleep(2)
 
 
 if __name__ == "__main__":
